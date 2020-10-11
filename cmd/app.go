@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/matt4biz/envy"
@@ -99,13 +100,14 @@ func runApp(args []string, version string, stdin io.Reader, stdout, stderr io.Wr
 		return -1
 	}
 
-	a.path, err = os.UserConfigDir()
+	p, err := os.UserConfigDir()
 
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return -1
 	}
 
+	a.path = path.Join(p, "envy")
 	a.envy, err = envy.New(a.path)
 
 	if err != nil {

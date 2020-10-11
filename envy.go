@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path"
 
 	"github.com/matt4biz/envy/internal"
 )
@@ -19,7 +20,7 @@ type Envy struct {
 // lives in the provided directory (typically the
 // user's "config" directory).
 func New(dir string) (*Envy, error) {
-	db, err := internal.NewBoltDB(dir + "/envy.db")
+	db, err := internal.NewBoltDB(path.Join(dir, "/envy.db"))
 
 	if err != nil {
 		return nil, err

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"path"
 	"reflect"
 	"testing"
 )
@@ -19,7 +20,7 @@ func TestBoltDBOps(t *testing.T) {
 
 	defer os.RemoveAll(dname)
 
-	db, err := NewBoltDB(dname + "/enty")
+	db, err := NewBoltDB(path.Join(dname, "/enty"))
 
 	if err != nil {
 		t.Fatal("newdb", err)
@@ -33,7 +34,7 @@ func TestBoltDBOps(t *testing.T) {
 
 	db.Close()
 
-	db2, err := NewBoltDB(dname + "/enty")
+	db2, err := NewBoltDB(path.Join(dname, "/enty"))
 
 	if err != nil {
 		t.Fatal("newdb 2", err)
