@@ -194,7 +194,7 @@ func (e *Envy) Realms() ([]string, error) {
 
 // List writes to its destination a single realm's variables and
 // their metadata, and optionally their values (use with caution).
-func (e *Envy) List(w io.Writer, realm string, decrypt bool) error {
+func (e *Envy) List(w io.Writer, realm, key string, decrypt bool) error {
 	m, err := e.fetchRaw(realm)
 
 	if err != nil {
@@ -205,6 +205,10 @@ func (e *Envy) List(w io.Writer, realm string, decrypt bool) error {
 	var maxSize int
 
 	for k, v := range m {
+		if key != "" && k != key {
+			continue
+		}
+
 		if l := len(k); l > maxWidth {
 			maxWidth = l
 		}
@@ -217,6 +221,10 @@ func (e *Envy) List(w io.Writer, realm string, decrypt bool) error {
 	maxSize = (int)(math.Log10(float64(maxSize)) + 1)
 
 	for k, ud := range m {
+		if key != "" && k != key {
+			continue
+		}
+
 		if decrypt {
 			fmt.Fprintf(w, "%-*s   %s   %s\n", maxWidth, k, ud.Meta.ToString(maxSize), ud.Data)
 		} else {

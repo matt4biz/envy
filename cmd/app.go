@@ -87,13 +87,13 @@ may be used to delete one key or an entire realm. Exec will execute a command
 with arguments, with value(s) from the realm injected as environment variables.
 
 Usage:
-  -h show this help message
+  -h  show this help message
 
-  add       realm key=value [key=value ...]
-  drop      realm[/key]
-  exec      realm[/key] command [args...]
-  list [-d] realm
-    -d decrypt & show secrets also
+  add         realm       key=value [key=value ...]
+  drop        realm[/key]
+  exec        realm[/key] command [args ...]
+  list [opts] realm[/key]
+    -d  show decrypted secrets also
   version
 
 Listing a realm displays a timestamp, size, and hash for each key-value pair.

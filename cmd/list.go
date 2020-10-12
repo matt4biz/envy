@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strings"
 )
 
 type ListCommand struct {
@@ -39,7 +40,15 @@ func (cmd *ListCommand) Run(app *App) int {
 		return 0
 	}
 
-	err := cmd.List(cmd.stdout, cmd.args[0], *decrypt)
+	var err error
+
+	parts := strings.Split(cmd.args[0], "/")
+
+	if len(parts) == 1 {
+		err = cmd.List(cmd.stdout, cmd.args[0], "", *decrypt)
+	} else {
+		err = cmd.List(cmd.stdout, parts[0], parts[1], *decrypt)
+	}
 
 	if err != nil {
 		fmt.Fprintln(cmd.stderr, err)
