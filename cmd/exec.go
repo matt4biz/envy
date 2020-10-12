@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -16,15 +17,30 @@ func (cmd *ExecCommand) Run(app *App) int {
 	cmd.App = app
 
 	if len(cmd.args) < 2 {
-		fmt.Fprintln(cmd.stderr, usage())
+		cmd.usage()
 		return 1
 	}
 
-	m, err := cmd.FetchAsVarList(cmd.args[0])
+	var m []string
+	var k, v string
+	var err error
+
+	parts := strings.Split(cmd.args[0], "/")
+
+	if len(parts) == 1 {
+		m, err = cmd.FetchAsVarList(cmd.args[0])
+	} else {
+		k = parts[1]
+		v, err = cmd.Get(parts[0], parts[1])
+	}
 
 	if err != nil {
 		fmt.Fprintln(cmd.stderr, err)
 		return -1
+	}
+
+	if v != "" {
+		m = append(m, k+"="+v)
 	}
 
 	done := make(chan os.Signal, 1)

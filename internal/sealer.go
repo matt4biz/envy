@@ -32,12 +32,12 @@ type metadata struct {
 	Modified int64  `json:"timestamp"` // Unix time we make this data
 }
 
-func (md metadata) String() string {
+func (md metadata) ToString(w int) string {
 	if len(md.Hash) == 0 {
 		return "unprepared"
 	}
 
-	return fmt.Sprintf("%s  %3d  %s", time.Unix(md.Modified, 0).Format(time.RFC3339), md.Size, md.Hash[:7])
+	return fmt.Sprintf("%s  %*d  %s", time.Unix(md.Modified, 0).Format(time.RFC3339), w, md.Size, md.Hash[:7])
 }
 
 type Sealer struct {
@@ -73,36 +73,38 @@ func NewSealer(r Ring, n Noncer) (*Sealer, error) {
 	return &Sealer{r, k, n}, nil
 }
 
-func (u *Unsealed) prep() ([]byte, error) {
+func (u *Unsealed) prep() ([]byte, []byte, error) {
 	b, err := json.Marshal(u.Data)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	hash := md5.New()
 
 	if _, err = hash.Write(b); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	u.Meta.Size = len(b)
-	u.Meta.Modified = time.Now().Unix()
-	u.Meta.Hash = hex.EncodeToString(hash.Sum(nil))
+	tag := hash.Sum(nil)
 
-	return b, nil
+	u.Meta.Size = len(u.Data)
+	u.Meta.Modified = time.Now().Unix()
+	u.Meta.Hash = hex.EncodeToString(tag)
+
+	return b, tag, nil
 }
 
 func (s Sealer) Seal(ud Unsealed) (Sealed, error) {
 	var sd Sealed
 
-	pt, err := ud.prep()
+	pt, aad, err := ud.prep()
 
 	if err != nil {
 		return sd, err
 	}
 
-	ct, err := s.encrypt(pt)
+	ct, err := s.encrypt(pt, aad)
 
 	if err != nil {
 		return sd, err
@@ -133,7 +135,7 @@ func (s Sealer) Unseal(sd Sealed) (Unsealed, error) {
 		return ud, err
 	}
 
-	pt, err := s.decrypt(sd.Data)
+	pt, err := s.decrypt(sd.Data, ud.Meta.Hash)
 
 	if err != nil {
 		return ud, err
@@ -143,7 +145,7 @@ func (s Sealer) Unseal(sd Sealed) (Unsealed, error) {
 	return ud, err
 }
 
-func (s Sealer) encrypt(pt []byte) (string, error) {
+func (s Sealer) encrypt(pt, aad []byte) (string, error) {
 	nonce, err := s.noncer.GetNonce()
 
 	if err != nil {
@@ -162,12 +164,12 @@ func (s Sealer) encrypt(pt []byte) (string, error) {
 		return "", err
 	}
 
-	ct := aesgcm.Seal(nonce, nonce, pt, nil)
+	ct := aesgcm.Seal(nonce, nonce, pt, aad)
 
 	return base64.StdEncoding.EncodeToString(ct), nil
 }
 
-func (s Sealer) decrypt(data string) ([]byte, error) {
+func (s Sealer) decrypt(data, tag string) ([]byte, error) {
 	mixed, err := base64.StdEncoding.DecodeString(data)
 
 	if err != nil {
@@ -188,7 +190,13 @@ func (s Sealer) decrypt(data string) ([]byte, error) {
 		return nil, err
 	}
 
-	pt, err := aesgcm.Open(nil, nonce, ct, nil)
+	aad, err := hex.DecodeString(tag)
+
+	if err != nil {
+		return nil, err
+	}
+
+	pt, err := aesgcm.Open(nil, nonce, ct, aad)
 
 	if err != nil {
 		return nil, err

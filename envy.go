@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"path"
 
 	"github.com/matt4biz/envy/internal"
@@ -200,19 +201,26 @@ func (e *Envy) List(w io.Writer, realm string, decrypt bool) error {
 		return err
 	}
 
-	var keyWidth int
+	var maxWidth int
+	var maxSize int
 
-	for k := range m {
-		if l := len(k); l > keyWidth {
-			keyWidth = l
+	for k, v := range m {
+		if l := len(k); l > maxWidth {
+			maxWidth = l
+		}
+
+		if l := v.Meta.Size; l > maxSize {
+			maxSize = l
 		}
 	}
 
+	maxSize = (int)(math.Log10(float64(maxSize)) + 1)
+
 	for k, ud := range m {
 		if decrypt {
-			fmt.Fprintf(w, "%-*s   %s   %s\n", keyWidth, k, ud.Meta, ud.Data)
+			fmt.Fprintf(w, "%-*s   %s   %s\n", maxWidth, k, ud.Meta.ToString(maxSize), ud.Data)
 		} else {
-			fmt.Fprintf(w, "%-*s   %s\n", keyWidth, k, ud.Meta)
+			fmt.Fprintf(w, "%-*s   %s\n", maxWidth, k, ud.Meta.ToString(maxSize))
 		}
 	}
 

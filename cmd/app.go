@@ -38,10 +38,12 @@ func (a *App) fromArgs(args []string) error {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
 	help := fs.Bool("h", false, "")
 
+	fs.Usage = a.usage
+
 	if err := fs.Parse(args); err != nil {
-		return err
+		return ErrUsage
 	} else if *help {
-		fmt.Fprintln(a.stderr, usage())
+		a.usage()
 		return ErrUsage
 	}
 
@@ -71,13 +73,33 @@ func (a *App) getCommand() (Command, error) {
 	return c, nil
 }
 
-func usage() string {
-	return strings.TrimSpace(`
+func (a *App) usage() {
+	msg := strings.TrimSpace(`
 envy: a tool to securely store and retrieve environment variables.
 
-usage:
-  -h help
+Variables are key-value pairs stored in a "realm" (or "namespace") of which 
+there may be one or more. All data is stored in a DB within the user's "config" 
+directory, encrypted with a per-user secret key stored in the system keychain.
+
+All operations take place in one of five subcommands. Add will create a realm
+if it doesn't exist, or overwrite keys in a realm that already exists. Drop
+may be used to delete one key or an entire realm. Exec will execute a command
+with arguments, with value(s) from the realm injected as environment variables.
+
+Usage:
+  -h show this help message
+
+  add       realm key=value [key=value ...]
+  drop      realm[/key]
+  exec      realm[/key] command [args...]
+  list [-d] realm
+    -d decrypt & show secrets also
+  version
+
+Listing a realm displays a timestamp, size, and hash for each key-value pair.
 	`)
+
+	fmt.Fprintln(a.stderr, msg)
 }
 
 func runApp(args []string, version string, stdin io.Reader, stdout, stderr io.Writer) int {

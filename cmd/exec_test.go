@@ -11,7 +11,7 @@ func TestExec(t *testing.T) {
 	stderr := new(bytes.Buffer)
 	app := NewTestApp(t, stdout, stderr)
 	cmd := ExecCommand{}
-	data := map[string]string{"a": "XX"}
+	data := map[string]string{"a": "b", "b": "1"}
 
 	if err := app.Add("top", data); err != nil {
 		t.Fatal("setup", err)
@@ -23,7 +23,7 @@ func TestExec(t *testing.T) {
 
 	if o != 0 {
 		t.Errorf("errors: %s", stderr.String())
-		t.Fatalf("invalid return: %d", o)
+		t.Fatalf("invalid 1st return: %d", o)
 	} else {
 		t.Log(strings.TrimSpace(stdout.String()))
 	}
@@ -33,10 +33,45 @@ func TestExec(t *testing.T) {
 	// trailing '\n' makes an extra (blank) line
 
 	if len(lines) != 2 {
-		t.Fatalf("invalid count: %v", lines)
+		t.Fatalf("invalid 1st count: %v", lines)
 	}
 
-	if lines[0] != "XX" {
-		t.Fatalf("invalid output: %q", lines)
+	if lines[0] != "b 1" {
+		t.Fatalf("invalid 1st output: %q", lines)
+	}
+}
+
+func TestExecOne(t *testing.T) {
+	stdout := new(bytes.Buffer)
+	stderr := new(bytes.Buffer)
+	app := NewTestApp(t, stdout, stderr)
+	cmd := ExecCommand{}
+	data := map[string]string{"a": "b", "b": "1"}
+
+	if err := app.Add("top", data); err != nil {
+		t.Fatal("setup", err)
+	}
+
+	app.args = []string{"top/b", "../test/test.sh"}
+
+	o := cmd.Run(app)
+
+	if o != 0 {
+		t.Errorf("errors: %s", stderr.String())
+		t.Fatalf("invalid 2nd return: %d", o)
+	} else {
+		t.Log(strings.TrimSpace(stdout.String()))
+	}
+
+	lines := strings.Split(stdout.String(), "\n")
+
+	// trailing '\n' makes an extra (blank) line
+
+	if len(lines) != 2 {
+		t.Fatalf("invalid 2nd count: %v", lines)
+	}
+
+	if lines[0] != "1" {
+		t.Fatalf("invalid 2nd output: %q", lines)
 	}
 }

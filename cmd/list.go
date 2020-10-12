@@ -15,8 +15,10 @@ func (cmd *ListCommand) Run(app *App) int {
 	fs := flag.NewFlagSet("list", flag.ContinueOnError)
 	decrypt := fs.Bool("d", false, "")
 
+	fs.Usage = cmd.usage
+
 	if err := fs.Parse(cmd.args); err != nil {
-		fmt.Fprintln(cmd.stderr, usage())
+		cmd.usage()
 		return 1
 	}
 

@@ -13,7 +13,7 @@ child: hack/main.go
 lint:
 	golangci-lint run
 
-test:
+test: envy.go $(SOURCES)
 	go test -v ./... -coverprofile=c.out -covermode=count
 
 demo: envy child
