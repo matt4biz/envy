@@ -144,3 +144,38 @@ func TestBoltDBOps(t *testing.T) {
 
 	db2.Close()
 }
+
+func TestEnsureDir(t *testing.T) {
+	dname, err := ioutil.TempDir("", "scratch")
+
+	if err != nil {
+		t.Fatal("tempdir", err)
+	}
+
+	t.Log(dname)
+
+	defer os.RemoveAll(dname)
+
+	p1 := path.Join(dname, "t1")
+	p2 := path.Join(dname, "t2")
+
+	if err = ioutil.WriteFile(p1, []byte("a"), 0644); err != nil {
+		t.Fatal("t1", err)
+	}
+
+	if err = ensureDir(p1); err == nil {
+		t.Error("ensure t1 should fail")
+	}
+
+	if err = ensureDir(p2); err != nil {
+		t.Error("ensure t2", err)
+	}
+
+	fi, err := os.Stat(p2)
+
+	if err != nil || !fi.IsDir() {
+		t.Errorf("stat returns %s: %o4", err, fi.Mode())
+	}
+
+	t.Logf("%s perms are %o4", p2, fi.Mode())
+}

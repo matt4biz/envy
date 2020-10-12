@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"path"
 
 	"github.com/boltdb/bolt"
 )
@@ -26,8 +28,12 @@ type BoltDB struct {
 	db *bolt.DB
 }
 
-func NewBoltDB(path string) (*BoltDB, error) {
-	db, err := bolt.Open(path, 0600, nil)
+func NewBoltDB(fpath string) (*BoltDB, error) {
+	if err := ensureDir(path.Dir(fpath)); err != nil {
+		return nil, err
+	}
+
+	db, err := bolt.Open(fpath, 0600, nil)
 
 	if err != nil {
 		return nil, err
@@ -189,4 +195,26 @@ func (b *BoltDB) SetKeys(realm string, s Stored) error {
 
 		return nil
 	})
+}
+
+func ensureDir(path string) error {
+	fi, err := os.Stat(path)
+
+	if err != nil {
+		if os.IsNotExist(err) {
+			if err = os.Mkdir(path, os.ModeDir|0700); err != nil {
+				return err
+			}
+
+			return nil
+		}
+
+		return err
+	}
+
+	if !fi.IsDir() {
+		return fmt.Errorf("%s exists, but is not a directory", path)
+	}
+
+	return nil
 }
