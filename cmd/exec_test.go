@@ -10,16 +10,17 @@ func TestExec(t *testing.T) {
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	app := NewTestApp(t, stdout, stderr)
-	cmd := ExecCommand{}
+
+	app.args = []string{"top", "../test/test.sh"}
+
+	cmd := ExecCommand{app}
 	data := map[string]string{"a": "b", "b": "1"}
 
 	if err := app.Add("top", data); err != nil {
 		t.Fatal("setup", err)
 	}
 
-	app.args = []string{"top", "../test/test.sh"}
-
-	o := cmd.Run(app)
+	o := cmd.Run()
 
 	if o != 0 {
 		t.Errorf("errors: %s", stderr.String())
@@ -45,16 +46,17 @@ func TestExecOne(t *testing.T) {
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	app := NewTestApp(t, stdout, stderr)
-	cmd := ExecCommand{}
+
+	app.args = []string{"top/b", "../test/test.sh"}
+
+	cmd := ExecCommand{app}
 	data := map[string]string{"a": "b", "b": "1"}
 
 	if err := app.Add("top", data); err != nil {
 		t.Fatal("setup", err)
 	}
 
-	app.args = []string{"top/b", "../test/test.sh"}
-
-	o := cmd.Run(app)
+	o := cmd.Run()
 
 	if o != 0 {
 		t.Errorf("errors: %s", stderr.String())

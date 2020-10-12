@@ -9,9 +9,7 @@ type DropCommand struct {
 	*App
 }
 
-func (cmd *DropCommand) Run(app *App) int {
-	cmd.App = app
-
+func (cmd *DropCommand) Run() int {
 	if len(cmd.args) < 1 {
 		cmd.usage()
 		return 1
@@ -33,8 +31,4 @@ func (cmd *DropCommand) Run(app *App) int {
 	}
 
 	return 0
-}
-
-func init() {
-	commands["drop"] = &DropCommand{}
 }

@@ -13,9 +13,7 @@ type ExecCommand struct {
 	*App
 }
 
-func (cmd *ExecCommand) Run(app *App) int {
-	cmd.App = app
-
+func (cmd *ExecCommand) Run() int {
 	if len(cmd.args) < 2 {
 		cmd.usage()
 		return 1
@@ -75,8 +73,4 @@ func (cmd *ExecCommand) Run(app *App) int {
 	}
 
 	return sub.ProcessState.ExitCode()
-}
-
-func init() {
-	commands["exec"] = &ExecCommand{}
 }

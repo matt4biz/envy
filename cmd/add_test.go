@@ -10,11 +10,11 @@ func TestAdd(t *testing.T) {
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	app := NewTestApp(t, stdout, stderr)
-	cmd := AddCommand{}
 
 	app.args = []string{"top", "a=b"}
 
-	o := cmd.Run(app)
+	cmd := AddCommand{app}
+	o := cmd.Run()
 
 	if o != 0 {
 		t.Errorf("errors: %s", stderr.String())

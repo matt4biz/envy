@@ -10,16 +10,17 @@ func TestList(t *testing.T) {
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	app := NewTestApp(t, stdout, stderr)
-	cmd := ListCommand{}
+
+	app.args = []string{"top"}
+
+	cmd := ListCommand{app}
 	data := map[string]string{"a": "xxx", "b": "yyy"}
 
 	if err := app.Add("top", data); err != nil {
 		t.Fatal("setup", err)
 	}
 
-	app.args = []string{"top"}
-
-	o := cmd.Run(app)
+	o := cmd.Run()
 
 	if o != 0 {
 		t.Errorf("errors: %s", stderr.String())

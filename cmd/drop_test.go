@@ -9,16 +9,17 @@ func TestDrop(t *testing.T) {
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	app := NewTestApp(t, stdout, stderr)
-	cmd := DropCommand{}
+
+	app.args = []string{"top/a"}
+
+	cmd := DropCommand{app}
 	data := map[string]string{"a": "XX", "b": "YY"}
 
 	if err := app.Add("top", data); err != nil {
 		t.Fatal("setup", err)
 	}
 
-	app.args = []string{"top/a"}
-
-	o := cmd.Run(app)
+	o := cmd.Run()
 
 	if o != 0 {
 		t.Errorf("errors: %s", stderr.String())
@@ -37,7 +38,7 @@ func TestDrop(t *testing.T) {
 
 	app.args = []string{"top"}
 
-	o = cmd.Run(app)
+	o = cmd.Run()
 
 	if o != 0 {
 		t.Errorf("errors: %s", stderr.String())

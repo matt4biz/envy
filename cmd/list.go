@@ -10,9 +10,7 @@ type ListCommand struct {
 	*App
 }
 
-func (cmd *ListCommand) Run(app *App) int {
-	cmd.App = app
-
+func (cmd *ListCommand) Run() int {
 	fs := flag.NewFlagSet("list", flag.ContinueOnError)
 	decrypt := fs.Bool("d", false, "")
 
@@ -56,8 +54,4 @@ func (cmd *ListCommand) Run(app *App) int {
 	}
 
 	return 0
-}
-
-func init() {
-	commands["list"] = &ListCommand{}
 }

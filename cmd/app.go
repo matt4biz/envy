@@ -24,14 +24,12 @@ type App struct {
 }
 
 type Command interface {
-	Run(*App) int
+	Run() int
 }
 
 var (
 	ErrUsage          = errors.New("usage")
 	ErrUnknownCommand = errors.New("unknown command")
-
-	commands = map[string]Command{} // must be ready for init
 )
 
 func (a *App) fromArgs(args []string) error {
@@ -64,13 +62,20 @@ func (a *App) getCommand() (Command, error) {
 	s := a.args[0]
 	a.args = a.args[1:]
 
-	c, ok := commands[s]
-
-	if !ok {
-		return nil, fmt.Errorf("%s: %w", s, ErrUnknownCommand)
+	switch s {
+	case "add":
+		return &AddCommand{a}, nil
+	case "drop":
+		return &DropCommand{a}, nil
+	case "exec":
+		return &ExecCommand{a}, nil
+	case "list":
+		return &ListCommand{a}, nil
+	case "version":
+		return &VersionCommand{a}, nil
 	}
 
-	return c, nil
+	return nil, fmt.Errorf("%s: %w", s, ErrUnknownCommand)
 }
 
 func (a *App) usage() {
@@ -137,5 +142,5 @@ func runApp(args []string, version string, stdin io.Reader, stdout, stderr io.Wr
 	}
 
 	defer a.Envy.Close()
-	return cmd.Run(&a)
+	return cmd.Run()
 }

@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 	"path"
+	"sort"
 
 	"github.com/matt4biz/envy/internal"
 )
@@ -189,7 +190,14 @@ func (e *Envy) Purge(realm string) error {
 
 // Realms returns a list of the realms in the secure store.
 func (e *Envy) Realms() ([]string, error) {
-	return e.db.ListRealms()
+	realms, err := e.db.ListRealms()
+
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Strings(realms)
+	return realms, nil
 }
 
 // List writes to its destination a single realm's variables and
@@ -204,10 +212,14 @@ func (e *Envy) List(w io.Writer, realm, key string, decrypt bool) error {
 	var maxWidth int
 	var maxSize int
 
+	keys := make([]string, 0, len(m))
+
 	for k, v := range m {
 		if key != "" && k != key {
 			continue
 		}
+
+		keys = append(keys, k)
 
 		if l := len(k); l > maxWidth {
 			maxWidth = l
@@ -220,10 +232,10 @@ func (e *Envy) List(w io.Writer, realm, key string, decrypt bool) error {
 
 	maxSize = (int)(math.Log10(float64(maxSize)) + 1)
 
-	for k, ud := range m {
-		if key != "" && k != key {
-			continue
-		}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		ud := m[k]
 
 		if decrypt {
 			fmt.Fprintf(w, "%-*s   %s   %s\n", maxWidth, k, ud.Meta.ToString(maxSize), ud.Data)

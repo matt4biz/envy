@@ -8,13 +8,7 @@ type VersionCommand struct {
 	*App
 }
 
-func (cmd *VersionCommand) Run(app *App) int {
-	cmd.App = app
-
+func (cmd *VersionCommand) Run() int {
 	fmt.Fprintln(cmd.stdout, cmd.version)
 	return 0
-}
-
-func init() {
-	commands["version"] = &VersionCommand{}
 }

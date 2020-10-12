@@ -10,9 +10,7 @@ type AddCommand struct {
 	*App
 }
 
-func (cmd *AddCommand) Run(app *App) int {
-	cmd.App = app
-
+func (cmd *AddCommand) Run() int {
 	e, err := internal.NewExtractor(cmd.args)
 
 	if err != nil {
@@ -31,8 +29,4 @@ func (cmd *AddCommand) Run(app *App) int {
 	}
 
 	return 0
-}
-
-func init() {
-	commands["add"] = &AddCommand{}
 }
