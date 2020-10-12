@@ -5,11 +5,11 @@ import (
 )
 
 type VersionCommand struct {
-	App
+	*App
 }
 
-func (cmd *VersionCommand) Run(a App) int {
-	cmd.App = a
+func (cmd *VersionCommand) Run(app *App) int {
+	cmd.App = app
 
 	fmt.Fprintln(cmd.stdout, cmd.version)
 	return 0

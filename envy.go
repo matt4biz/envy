@@ -16,17 +16,23 @@ type Envy struct {
 	sealer *internal.Sealer
 }
 
-// NewEnvy returns a secure variable store whose DB
+// New returns a secure variable store whose DB
 // lives in the provided directory (typically the
 // user's "config" directory).
 func New(dir string) (*Envy, error) {
-	db, err := internal.NewBoltDB(path.Join(dir, "/envy.db"))
+	s, err := internal.NewDefaultSealer()
 
 	if err != nil {
 		return nil, err
 	}
 
-	s, err := internal.NewDefaultSealer()
+	return NewWithSealer(dir, s)
+}
+
+// NewWithSealer is really for UTs, so we can pass in
+// a fake sealer that's deterministic.
+func NewWithSealer(dir string, s *internal.Sealer) (*Envy, error) {
+	db, err := internal.NewBoltDB(path.Join(dir, "/envy.db"))
 
 	if err != nil {
 		return nil, err

@@ -197,6 +197,12 @@ func (s Sealer) decrypt(data string) ([]byte, error) {
 	return pt, nil
 }
 
+func NewTestSealer() *Sealer {
+	s, _ := NewSealer(testRing, testNonce)
+
+	return s
+}
+
 type Noncer interface {
 	GetNonce() ([]byte, error)
 }

@@ -13,7 +13,8 @@ import (
 )
 
 type App struct {
-	envy    *envy.Envy
+	*envy.Envy
+
 	args    []string
 	version string
 	path    string
@@ -23,14 +24,12 @@ type App struct {
 }
 
 type Command interface {
-	Run(a App) int
+	Run(*App) int
 }
 
 var (
 	ErrUsage          = errors.New("usage")
 	ErrUnknownCommand = errors.New("unknown command")
-	//ErrPathRequired   = errors.New("path required")
-	//ErrInvalidValue   = errors.New("invalid value")
 
 	commands = map[string]Command{} // must be ready for init
 )
@@ -51,7 +50,7 @@ func (a *App) fromArgs(args []string) error {
 	// where if the command is set
 	// the other args need to be in key=value pairs that we regex
 
-	a.args = args
+	a.args = fs.Args()
 	return nil
 }
 
@@ -108,13 +107,13 @@ func runApp(args []string, version string, stdin io.Reader, stdout, stderr io.Wr
 	}
 
 	a.path = path.Join(p, "envy")
-	a.envy, err = envy.New(a.path)
+	a.Envy, err = envy.New(a.path)
 
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return -1
 	}
 
-	defer a.envy.Close()
-	return cmd.Run(a)
+	defer a.Envy.Close()
+	return cmd.Run(&a)
 }

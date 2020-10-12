@@ -5,7 +5,7 @@ import (
 )
 
 func TestSealer(t *testing.T) {
-	s, _ := NewSealer(testRing, testNonce)
+	s := NewTestSealer()
 	ud := Unsealed{Data: "matt"}
 
 	t.Log("unsealed", ud)

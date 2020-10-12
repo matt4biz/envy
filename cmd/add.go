@@ -2,17 +2,34 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/matt4biz/envy/internal"
 )
 
 type AddCommand struct {
-	App
+	*App
 }
 
-func (cmd *AddCommand) Run(a App) int {
-	cmd.App = a
+func (cmd *AddCommand) Run(app *App) int {
+	cmd.App = app
 
-	fmt.Fprintln(cmd.stdout, "user dir =", cmd.path)
-	fmt.Fprintln(cmd.stderr, "not adding today")
+	e, err := internal.NewExtractor(cmd.args)
+
+	if err != nil {
+		fmt.Fprintf(cmd.stderr, "extract: %s\n", err)
+		return -1
+	}
+
+	cmd.args = e.Args()
+	//fmt.Fprintln(cmd.stdout, "realm:", e.Realm(), "vals:", e.Values(), "args", cmd.args)
+
+	err = cmd.Add(e.Realm(), e.Values())
+
+	if err != nil {
+		fmt.Fprintln(cmd.stderr, err)
+		return -1
+	}
+
 	return 0
 }
 
