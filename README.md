@@ -51,7 +51,7 @@ The secret key is added once to the keychain when you first run envy. If you wan
 1. remove the key, which is named `matt4biz-envy-secret-key`
 2. remove the database, which is `envy/envy.db` in your config directory
 
-##Commands
+## Commands
 There are five commands, but one of them just lists the version of the program; you can also type `envy -h` to see usage:
 
 ```
