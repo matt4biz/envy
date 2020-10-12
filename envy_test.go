@@ -77,7 +77,7 @@ func TestEnvy(t *testing.T) {
 
 	b := new(bytes.Buffer)
 
-	if err := e.List(b, "data", true); err != nil {
+	if err := e.List(b, "data", "", true); err != nil {
 		t.Errorf("list: %s", err)
 	} else {
 		t.Log("\n", b.String())
