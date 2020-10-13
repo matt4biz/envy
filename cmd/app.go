@@ -15,7 +15,6 @@ type App struct {
 
 	args    []string
 	version string
-	path    string
 	stdin   io.Reader
 	stdout  io.Writer
 	stderr  io.Writer
@@ -67,8 +66,6 @@ func (a *App) getCommand() (Command, error) {
 		return &AddCommand{a}, nil
 	case "drop":
 		return &DropCommand{a}, nil
-	case "dump":
-		return &DumpCommand{a}, nil
 	case "exec":
 		return &ExecCommand{a}, nil
 	case "list":
@@ -77,6 +74,8 @@ func (a *App) getCommand() (Command, error) {
 		return &ReadCommand{a}, nil
 	case "version":
 		return &VersionCommand{a}, nil
+	case "write":
+		return &WriteCommand{a}, nil
 	}
 
 	return nil, fmt.Errorf("%s: %w", s, ErrUnknownCommand)
