@@ -5,8 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"os"
-	"path"
 	"strings"
 
 	"github.com/matt4biz/envy"
@@ -137,15 +135,7 @@ func runApp(args []string, version string, stdin io.Reader, stdout, stderr io.Wr
 	}
 
 	if cmd.NeedsDB() {
-		p, err := os.UserConfigDir()
-
-		if err != nil {
-			fmt.Fprintln(stderr, err)
-			return -1
-		}
-
-		a.path = path.Join(p, "envy")
-		a.Envy, err = envy.New(a.path)
+		a.Envy, err = envy.New()
 
 		if err != nil {
 			fmt.Fprintln(stderr, err)

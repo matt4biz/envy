@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"os"
 	"path"
 	"sort"
 
@@ -19,9 +20,27 @@ type Envy struct {
 }
 
 // New returns a secure variable store whose DB
-// lives in the provided directory (typically the
-// user's "config" directory).
-func New(dir string) (*Envy, error) {
+// lives in the user's "config" directory.
+func New() (*Envy, error) {
+	d, err := defaultDirectory()
+
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := internal.NewDefaultSealer()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewWithSealer(d, s)
+}
+
+// NewWithDirectory returns a secure variable store
+// whose DB lives in the provided directory (mainly
+// for UTs that need a temporary directory).
+func NewWithDirectory(dir string) (*Envy, error) {
 	s, err := internal.NewDefaultSealer()
 
 	if err != nil {
@@ -266,4 +285,14 @@ func (e *Envy) Read(r io.Reader, realm string) error {
 // the Envy object has been created.
 func (e *Envy) Close() {
 	_ = e.db.Close()
+}
+
+func defaultDirectory() (string, error) {
+	d, err := os.UserConfigDir()
+
+	if err != nil {
+		return "", err
+	}
+
+	return path.Join(d, "envy"), nil
 }
