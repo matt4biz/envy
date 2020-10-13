@@ -10,6 +10,7 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+// DB exists in case we want to mock the DB later.
 type DB interface {
 	SetKey(realm, key string, data Sealed) error
 	GetKey(realm, key string) (Sealed, error)

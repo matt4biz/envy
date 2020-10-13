@@ -19,11 +19,8 @@ func (cmd *AddCommand) Run() int {
 	}
 
 	cmd.args = e.Args()
-	//fmt.Fprintln(cmd.stdout, "realm:", e.Realm(), "vals:", e.Values(), "args", cmd.args)
 
-	err = cmd.Add(e.Realm(), e.Values())
-
-	if err != nil {
+	if err = cmd.Add(e.Realm(), e.Values()); err != nil {
 		fmt.Fprintln(cmd.stderr, err)
 		return -1
 	}

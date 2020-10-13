@@ -19,9 +19,11 @@ func (cmd *ExecCommand) Run() int {
 		return 1
 	}
 
-	var m []string
-	var k, v string
-	var err error
+	var (
+		m    []string
+		k, v string
+		err  error
+	)
 
 	parts := strings.Split(cmd.args[0], "/")
 

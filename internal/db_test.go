@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestBoltDBOps(t *testing.T) {
+func TestBoltDBOps(t *testing.T) { //nolint:gocyclo
 	dname, err := ioutil.TempDir("", "envy")
 
 	if err != nil {
@@ -60,7 +60,9 @@ func TestBoltDBOps(t *testing.T) {
 	}
 
 	l, err := db2.ListKeys("top")
+
 	t.Log("list", l)
+
 	if err != nil {
 		t.Fatal("list", err)
 	} else if len(l) < 2 || l[0] != "key" || l[1] != "key2" {
@@ -68,7 +70,9 @@ func TestBoltDBOps(t *testing.T) {
 	}
 
 	x, err := db2.GetAllKeys("top")
+
 	t.Log(x)
+
 	if err != nil {
 		t.Fatal("get-all", err)
 	} else if len(x) != 2 || x["key"].Data != "data" {
@@ -80,7 +84,9 @@ func TestBoltDBOps(t *testing.T) {
 	}
 
 	l2, err := db2.ListRealms()
+
 	t.Log("realms", l2)
+
 	if err != nil {
 		t.Fatal("realms", err)
 	} else if len(l2) < 2 || l2[0] != "top" || l2[1] != "top2" {
@@ -93,6 +99,7 @@ func TestBoltDBOps(t *testing.T) {
 
 	if _, err := db2.GetKey("top", "key"); err != nil {
 		t.Log(err)
+
 		if !errors.Is(err, ErrNotFound) {
 			t.Errorf("wrong error for bad key: %s", err)
 		}
@@ -102,6 +109,7 @@ func TestBoltDBOps(t *testing.T) {
 
 	if err := db2.DropKey("pot", "key"); err != nil {
 		t.Log(err)
+
 		if !errors.Is(err, ErrNotFound) {
 			t.Errorf("wrong error for bad realm: %s", err)
 		}
@@ -115,6 +123,7 @@ func TestBoltDBOps(t *testing.T) {
 
 	if _, err := db2.GetKey("top2", "key"); err != nil {
 		t.Log(err)
+
 		if !errors.Is(err, ErrNotFound) {
 			t.Errorf("wrong error for bad key: %s", err)
 		}
@@ -127,7 +136,9 @@ func TestBoltDBOps(t *testing.T) {
 	}
 
 	x2, err := db2.GetAllKeys("top3")
+
 	t.Log(x2)
+
 	if err != nil {
 		t.Fatal("get-all", err)
 	} else if !reflect.DeepEqual(x, x2) {
@@ -135,7 +146,9 @@ func TestBoltDBOps(t *testing.T) {
 	}
 
 	l3, err := db2.ListRealms()
+
 	t.Log("realms", l3)
+
 	if err != nil {
 		t.Fatal("realms", err)
 	} else if len(l3) < 2 || l3[0] != "top" || l3[1] != "top3" {

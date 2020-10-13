@@ -25,12 +25,19 @@ type App struct {
 
 type Command interface {
 	Run() int
+	NeedsDB() bool
 }
 
 var (
 	ErrUsage          = errors.New("usage")
 	ErrUnknownCommand = errors.New("unknown command")
 )
+
+// NeedsDB operates on the opt-out theory; a subcommand
+// should override this if it doesn't need a DB set up.
+func (a *App) NeedsDB() bool {
+	return true
+}
 
 func (a *App) fromArgs(args []string) error {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
@@ -44,11 +51,6 @@ func (a *App) fromArgs(args []string) error {
 		a.usage()
 		return ErrUsage
 	}
-
-	// we need e.g.
-	// [envy] [opts] command [command-opts] [path] [other args ...]
-	// where if the command is set
-	// the other args need to be in key=value pairs that we regex
 
 	a.args = fs.Args()
 	return nil
@@ -67,10 +69,14 @@ func (a *App) getCommand() (Command, error) {
 		return &AddCommand{a}, nil
 	case "drop":
 		return &DropCommand{a}, nil
+	case "dump":
+		return &DumpCommand{a}, nil
 	case "exec":
 		return &ExecCommand{a}, nil
 	case "list":
 		return &ListCommand{a}, nil
+	case "read":
+		return &ReadCommand{a}, nil
 	case "version":
 		return &VersionCommand{a}, nil
 	}
@@ -86,10 +92,11 @@ Variables are key-value pairs stored in a "realm" (or "namespace") of which
 there may be one or more. All data is stored in a DB within the user's "config" 
 directory, encrypted with a per-user secret key stored in the system keychain.
 
-All operations take place in one of five subcommands. Add will create a realm
+All operations take place in one of the subcommands. Add will create a realm
 if it doesn't exist, or overwrite keys in a realm that already exists. Drop
 may be used to delete one key or an entire realm. Exec will execute a command
 with arguments, with value(s) from the realm injected as environment variables.
+Read and dump allow a realm's data to be imported or exported in JSON format.
 
 Usage:
   -h  show this help message
@@ -99,6 +106,9 @@ Usage:
   exec        realm[/key] command [args ...]
   list [opts] realm[/key]
     -d  show decrypted secrets also
+  read        realm       file
+    -clear  overwrite contents
+  dump        realm       file
   version
 
 Listing a realm displays a timestamp, size, and hash for each key-value pair.
@@ -126,21 +136,24 @@ func runApp(args []string, version string, stdin io.Reader, stdout, stderr io.Wr
 		return -1
 	}
 
-	p, err := os.UserConfigDir()
+	if cmd.NeedsDB() {
+		p, err := os.UserConfigDir()
 
-	if err != nil {
-		fmt.Fprintln(stderr, err)
-		return -1
+		if err != nil {
+			fmt.Fprintln(stderr, err)
+			return -1
+		}
+
+		a.path = path.Join(p, "envy")
+		a.Envy, err = envy.New(a.path)
+
+		if err != nil {
+			fmt.Fprintln(stderr, err)
+			return -1
+		}
+
+		defer a.Envy.Close()
 	}
 
-	a.path = path.Join(p, "envy")
-	a.Envy, err = envy.New(a.path)
-
-	if err != nil {
-		fmt.Fprintln(stderr, err)
-		return -1
-	}
-
-	defer a.Envy.Close()
 	return cmd.Run()
 }

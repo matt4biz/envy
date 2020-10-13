@@ -54,35 +54,29 @@ The secret key is added once to the keychain when you first run envy. If you wan
 2. remove the database, which is `envy/envy.db` in your config directory
 
 ## Commands
-There are five commands, but one of them just lists the version of the program; you can also type `envy -h` to see usage:
+There are seven commands, but one of them just lists the version of the program; you can also type `envy -h` to see usage:
 
 ```
 envy: a tool to securely store and retrieve environment variables.
 
-Variables are key-value pairs stored in a "realm" (or "namespace") of which
-there may be one or more. All data is stored in a DB within the user's "config"
-directory, encrypted with a per-user secret key stored in the system keychain.
-
-All operations take place in one of five subcommands. Add will create a realm
-if it doesn't exist, or overwrite keys in a realm that already exists. Drop
-may be used to delete one key or an entire realm. Exec will execute a command
-with arguments, with value(s) from the realm injected as environment variables.
+...
 
 Usage:
-  -h show this help message
+  -h  show this help message
 
-  add       realm key=value [key=value ...]
-  drop      realm[/key]
-  exec      realm[/key] command [args...]
-  list [-d] realm
-    -d decrypt & show secrets also
+  add         realm       key=value [key=value ...]
+  drop        realm[/key]
+  exec        realm[/key] command [args ...]
+  list [opts] realm[/key]
+    -d  show decrypted secrets also
+  read        realm       file
+    -clear  overwrite contents
+  dump        realm       file
   version
-
-Listing a realm displays a timestamp, size, and hash for each key-value pair.
 ```
 
 ### Add
-The add subcommand adds one or more keys to a realm. The realm will be created if it doesn't exist. If it exists already, the key(s) you set will overwrite any matching key in the realm.
+The `add` subcommand adds one or more keys to a realm. The realm will be created if it doesn't exist. If it exists already, the key(s) you set will overwrite any matching key in the realm.
 
 For example, assuming a new database:
 
@@ -101,7 +95,7 @@ $ envy add test a=3
 the value for key "a" will change, but other keys will not be disturbed.
 
 ### List
-The list command with no realm will list the available realms in the database. For example, after the commands above,
+The `list` subcommand lists the keys in a realm, or the available realms in the database if none is specified. For example, after the commands above,
 
 ```
 $ envy list
@@ -127,7 +121,7 @@ b   2020-10-11T23:28:05-06:00  1  39c6844   2
 ```
 
 ### Drop
-The drop command can delete one key from a realm, or the entire realm.
+The `drop` subcommand can delete one key from a realm, or the entire realm.
 
 For example,
 
@@ -149,9 +143,25 @@ $ envy list
 shows that we've returned the database to its empty state.
 
 ### Exec
-Of course, the exec command is the main reason for this tool. Given a realm (or a specific key from a realm), envy will execute another command with its environment variables augmented by data that envy stores. (See the example above.)
+Of course, the `exec` subcommand is the main reason for this tool. Given a realm (or a specific key from a realm), envy will execute another command with its environment variables augmented by data that envy stores. (See the example above.)
 
 envy can pass (some) signals through to its child process, particularly control-C, so it's possible to kill off the child if you need to. The childs standard input, output, and error output mirror envy's environment.
+
+### Read and dump
+The `read` and `dump` subcommands allow a realm to be updated or written out using JSON. If the filename is "-" then `stdin` or `stdout` are used.
+
+For example,
+
+```
+$ echo '{"b":"14", "a":"21"}' | envy read test -
+$ envy list test
+a   2020-10-13T07:14:56-06:00  2  317dd18
+b   2020-10-13T07:14:56-06:00  2  f27d5f6
+$ envy dump test -
+{"a":"21","b":"14"}
+```
+
+Normally, reading JSON into a realm adds or overwrites existing keys, but otherwise leaves the existing data in place. Using the `-clear` option causes the realm to be purged first.
 
 ## As a library
 envy is not just a command-line tool, it's also a library that can be used in building another tool.

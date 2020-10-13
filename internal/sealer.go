@@ -67,9 +67,11 @@ func NewDefaultSealer() (*Sealer, error) {
 
 func NewSealer(r Ring, n Noncer) (*Sealer, error) {
 	k, err := r.GetSecret()
+
 	if err != nil {
 		return nil, err
 	}
+
 	return &Sealer{r, k, n}, nil
 }
 
