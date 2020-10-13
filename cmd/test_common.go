@@ -26,14 +26,14 @@ func NewTestApp(t *testing.T, so, se *bytes.Buffer) *App {
 
 	defer os.RemoveAll(dname)
 
-	envy, err := envy.NewWithSealer(dname, internal.NewTestSealer())
+	e, err := envy.NewWithSealer(dname, internal.NewTestSealer())
 
 	if err != nil {
 		t.Fatal("new-sealer", err)
 	}
 
 	app := App{
-		Envy:   envy,
+		Envy:   e,
 		args:   []string{},
 		path:   dname,
 		stdout: so,

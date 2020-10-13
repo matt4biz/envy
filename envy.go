@@ -31,8 +31,8 @@ func New(dir string) (*Envy, error) {
 	return NewWithSealer(dir, s)
 }
 
-// NewWithSealer is really for UTs, so we can pass in
-// a fake sealer that's deterministic.
+// NewWithSealer is really a constructor for UTs, so we
+// can pass in a fake sealer that's deterministic.
 func NewWithSealer(dir string, s *internal.Sealer) (*Envy, error) {
 	db, err := internal.NewBoltDB(path.Join(dir, "/envy.db"))
 
@@ -73,6 +73,7 @@ func (e *Envy) Add(realm string, vars map[string]string) error {
 	return e.db.SetKeys(realm, m)
 }
 
+// fetchRaw does the real work of getting data from the DB.
 func (e *Envy) fetchRaw(realm string) (internal.Loaded, error) {
 	m, err := e.db.GetAllKeys(realm)
 
@@ -247,6 +248,22 @@ func (e *Envy) List(w io.Writer, realm, key string, decrypt bool) error {
 	return nil
 }
 
+// Read takes JSON input and writes the contents into the
+// realm (assumed to be an object with key-value pairs)
+func (e *Envy) Read(r io.Reader, realm string) error {
+	m := make(map[string]string)
+
+	err := json.NewDecoder(r).Decode(&m)
+
+	if err != nil {
+		return err
+	}
+
+	return e.Add(realm, m)
+}
+
+// Close closes the DB. Clients should defer this once
+// the Envy object has been created.
 func (e *Envy) Close() {
 	_ = e.db.Close()
 }

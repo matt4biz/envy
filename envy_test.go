@@ -12,7 +12,7 @@ import (
 	"github.com/zalando/go-keyring"
 )
 
-func TestEnvy(t *testing.T) {
+func TestEnvy(t *testing.T) { //nolint:gocyclo
 	// once we've set the mock we're done in this
 	// test process -- even for other unit tests
 
@@ -101,5 +101,18 @@ func TestEnvy(t *testing.T) {
 
 	if _, err = e.Fetch("data"); !errors.Is(err, internal.ErrNotFound) {
 		t.Errorf("after purge: %s", err)
+	}
+
+	jorig := `{"x":"21","y":"14"}`
+	jdata := bytes.NewBufferString(jorig)
+
+	if err = e.Read(jdata, "json"); err != nil {
+		t.Fatal("read", err)
+	}
+
+	if j, err := e.FetchAsJSON("json"); err != nil {
+		t.Error("read json", err)
+	} else if string(j) != jorig {
+		t.Errorf("invalid json: %s (should be %s)", string(j), jorig)
 	}
 }

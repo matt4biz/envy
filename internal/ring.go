@@ -26,7 +26,7 @@ type Keychain struct {
 }
 
 func NewKeychain() (*Keychain, error) {
-	user, err := user.Current()
+	u, err := user.Current()
 
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func NewKeychain() (*Keychain, error) {
 
 	k := Keychain{
 		service: defaultService,
-		user:    user.Username,
+		user:    u.Username,
 		keyer:   &realGenerator{},
 	}
 

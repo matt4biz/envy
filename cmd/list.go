@@ -12,7 +12,7 @@ type ListCommand struct {
 
 func (cmd *ListCommand) Run() int {
 	fs := flag.NewFlagSet("list", flag.ContinueOnError)
-	decrypt := fs.Bool("d", false, "")
+	decrypt := fs.Bool("d", false, "show decrypted values")
 
 	fs.Usage = cmd.usage
 
