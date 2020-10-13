@@ -16,6 +16,7 @@ import (
 // variable store.
 type Envy struct {
 	db     internal.DB
+	dir    string
 	sealer *internal.Sealer
 }
 
@@ -61,6 +62,7 @@ func NewWithSealer(dir string, s *internal.Sealer) (*Envy, error) {
 
 	e := Envy{
 		db:     db,
+		dir:    dir,
 		sealer: s,
 	}
 
@@ -70,6 +72,11 @@ func NewWithSealer(dir string, s *internal.Sealer) (*Envy, error) {
 // CurrentUser returns the user's login name.
 func (e *Envy) CurrentUser() string {
 	return e.sealer.GetUsername()
+}
+
+// Directory returns the directory holding the DB.
+func (e *Envy) Directory() string {
+	return e.dir
 }
 
 // Add writes a map of {variable, value} pairs to the secure
@@ -268,7 +275,7 @@ func (e *Envy) List(w io.Writer, realm, key string, decrypt bool) error {
 }
 
 // Read takes JSON input and writes the contents into the
-// realm (assumed to be an object with key-value pairs)
+// realm (assumed to be an object with key-value pairs).
 func (e *Envy) Read(r io.Reader, realm string) error {
 	m := make(map[string]string)
 
@@ -287,6 +294,7 @@ func (e *Envy) Close() {
 	_ = e.db.Close()
 }
 
+// defaultDirectory returns <user-config-dir>/envy.
 func defaultDirectory() (string, error) {
 	d, err := os.UserConfigDir()
 

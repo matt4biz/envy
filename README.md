@@ -14,7 +14,7 @@ There have been several tools for injecting environment variables from files int
 The basic idea is, you execute the env-variable managing tool, which gets key-value pairs from somewhere, and then runs another command for you:
 
 ```
-$ envy exec [realm] command [args ...]
+$ envy exec <realm> command [args ...]
 ```
 
 for example,
@@ -42,15 +42,15 @@ I have deliberately minimized the dependencies, which are basically the [Bolt da
 ## How it works
 Variables (key-value pairs) are grouped into "realms" which is just a shorter way to type "namespaces". Because these variables are primarily used as environment variables, they're stored in a map of string keys to string values.
 
-envy maintains a Bolt database in your "user config" directory, for example, `$HOME/Library/Application Support` on macOS. That database has a bucket for each realm, and an entry in the bucket for each key-value pair.
+envy maintains a Bolt database in the "user config" directory, for example, `$HOME/Library/Application Support` on macOS. That database has a bucket for each realm, and an entry in the bucket for each key-value pair.
 
-With the variable is some metadata: we keep the last-modified timestamp, size, and a secure hash of the value part of the key-value pair. The hash is also used with AES-GCM when that value is encrypted. The encrypted data and the metadata in JSON form are converted to Base64 encoding and then stored together a single object identified by the key. Only the (possibly secret) value is encrypted; the metadata isn't, but if the hash is changed, decryption fails.
+With each variable is some metadata: we keep the last-modified timestamp, size, and a secure hash of the value part of the key-value pair. The hash is also used with AES-GCM when that value is encrypted. The encrypted data and the metadata in JSON form are converted to Base64 encoding and then stored together a single object identified by the key. Only the (possibly secret) value is encrypted; the metadata isn't, but if the hash is changed, decryption fails.
 
-The secret key needed to run AES-GCM is stored in your system's secure keychain, which on macOS means the login keychain that's visible in Keychain Access. (Note that you can see and even edit the secret key in Keychain Access or using the `security` command -- but if you change or delete that key, you'll never get your data back out of the Bolt database.)
+The secret key needed to run AES-GCM is stored in your system's secure keychain, which on macOS means the default login keychain that's visible in Keychain Access. (Note that you can see and even edit the secret key in Keychain Access or using the `security` command -- but if you change or delete that key, you'll never get your data back out of the Bolt database.)
 
 The secret key is added once to the keychain when you first run envy. If you want to wipe everything and start over, then
 
-1. remove the key, which is named `matt4biz-envy-secret-key`
+1. remove the key named `matt4biz-envy-secret-key` from your keychain
 2. remove the database, which is `envy/envy.db` in your config directory
 
 ## Commands
@@ -70,8 +70,8 @@ Usage:
   list [opts] realm[/key]
     -d  show decrypted secrets also
   read        realm       file
+  write       realm       file
     -clear  overwrite contents
-  dump        realm       file
   version
 ```
 
@@ -147,26 +147,26 @@ Of course, the `exec` subcommand is the main reason for this tool. Given a realm
 
 envy can pass (some) signals through to its child process, particularly control-C, so it's possible to kill off the child if you need to. The childs standard input, output, and error output mirror envy's environment.
 
-### Read and dump
-The `read` and `dump` subcommands allow a realm to be updated or written out using JSON. If the filename is "-" then `stdin` or `stdout` are used.
+### Write and read
+The `write` and `read` subcommands allow a realm to be updated or written out using JSON. If the filename is "-" then `stdin` or `stdout` are used.
 
 For example,
 
 ```
-$ echo '{"b":"14", "a":"21"}' | envy read test -
+$ echo '{"b":"14", "a":"21"}' | envy write test -
 $ envy list test
 a   2020-10-13T07:14:56-06:00  2  317dd18
 b   2020-10-13T07:14:56-06:00  2  f27d5f6
-$ envy dump test -
+$ envy read test -
 {"a":"21","b":"14"}
 ```
 
-Normally, reading JSON into a realm adds or overwrites existing keys, but otherwise leaves the existing data in place. Using the `-clear` option causes the realm to be purged first.
+Normally, writing JSON into a realm adds or overwrites existing keys, but otherwise leaves the existing data in place. Using the `-clear` option causes the realm to be purged first.
 
 ## As a library
 envy is not just a command-line tool, it's also a library that can be used in building another tool.
 
-To get started, you just need to create the `Envy` object, passing in the directory where the database lives:
+To get started, you just need to create the `Envy` object:
 
 ```go
 package main
@@ -188,6 +188,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	fmt.Println(e.Directory())
+
 	m, err := e.FetchAsJSON("test")
 
 	if err != nil {
@@ -202,12 +204,14 @@ with the output on macOS (given the examples above):
 
 ```
 $ go run .
-/Users/<your-login>/Library/Application Support
+/Users/<your-login>/Library/Application Support/envy
 {"a":"3","b":"2"}
 ```
 
 ## Details
 The repo is organized simply:
+
+The top-level library API is in `envy.go`; everything it needs is in the `internal` sub-package. The CLI and subcommands are in `cmd`.
 
 ```
 $ tree
@@ -215,10 +219,12 @@ $ tree
 ├── LICENSE
 ├── Makefile
 ├── README.md
+├── c.out
 ├── cmd
 │   ├── add.go
 │   ├── add_test.go
 │   ├── app.go
+│   ├── app_test.go
 │   ├── drop.go
 │   ├── drop_test.go
 │   ├── exec.go
@@ -226,8 +232,12 @@ $ tree
 │   ├── list.go
 │   ├── list_test.go
 │   ├── main.go
+│   ├── read.go
+│   ├── read_test.go
 │   ├── test_common.go
-│   └── version.go
+│   ├── version.go
+│   ├── write.go
+│   └── write_test.go
 ├── envy.go
 ├── envy_test.go
 ├── go.mod
@@ -247,8 +257,6 @@ $ tree
     └── test.sh
 ```
 
-The top-level library API is in `envy.go`; everything it needs is in the `internal` sub-package. The CLI and subcommands are in `cmd`.
-
 The makefile has only a few targets:
 
 - envy (the default)
@@ -262,6 +270,6 @@ The test script in `test/test.sh` is used by unit tests, and shouldn't be change
 
 The unit tests use a mock keyring in memory and auto-delete their temporary Bolt DB, so they have no effect on your "real" envy secret key and secure DB.
 
-Code coverage is above 70% except for the subcommands; that's only about 50% (more error path coverage needed).
+Code coverage is around 70% (more error path coverage needed).
 
 The design of the CLI was influenced by Carl Johnson's [_Writing Go CLIs With Just Enough Architecture_](https://blog.carlmjohnson.net/post/2020/go-cli-how-to-and-advice/).

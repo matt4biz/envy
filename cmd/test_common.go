@@ -35,7 +35,6 @@ func NewTestApp(t *testing.T, so, se *bytes.Buffer) *App {
 	app := App{
 		Envy:   e,
 		args:   []string{},
-		path:   dname,
 		stdout: so,
 		stderr: se,
 	}
