@@ -275,7 +275,7 @@ func (e *Envy) List(w io.Writer, realm, key string, decrypt bool) error {
 }
 
 // Read takes JSON input and writes the contents into the
-// realm (assumed to be an object with key-value pairs)
+// realm (assumed to be an object with key-value pairs).
 func (e *Envy) Read(r io.Reader, realm string) error {
 	m := make(map[string]string)
 
@@ -294,6 +294,7 @@ func (e *Envy) Close() {
 	_ = e.db.Close()
 }
 
+// defaultDirectory returns <user-config-dir>/envy.
 func defaultDirectory() (string, error) {
 	d, err := os.UserConfigDir()
 
