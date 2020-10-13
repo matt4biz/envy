@@ -181,17 +181,8 @@ import (
 )
 
 func main() {
-	dir, err := os.UserConfigDir()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(dir)
-
 	// the standard location is config-dir/envy
-
-	e, err := envy.New(path.Join(dir, "envy"))
+	e, err := envy.New()
 
 	if err != nil {
 		log.Fatal(err)

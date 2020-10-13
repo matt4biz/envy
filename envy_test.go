@@ -28,7 +28,7 @@ func TestEnvy(t *testing.T) { //nolint:gocyclo
 
 	defer os.RemoveAll(dname)
 
-	e, err := New(dname)
+	e, err := NewWithDirectory(dname)
 
 	if err != nil {
 		t.Fatal("new", err)
@@ -115,4 +115,14 @@ func TestEnvy(t *testing.T) { //nolint:gocyclo
 	} else if string(j) != jorig {
 		t.Errorf("invalid json: %s (should be %s)", string(j), jorig)
 	}
+}
+
+func TestDefaultDirectory(t *testing.T) {
+	d, err := defaultDirectory()
+
+	if err != nil || d == "" {
+		t.Fatalf("invalid default: [%s]: %s", d, err)
+	}
+
+	t.Log(d)
 }
