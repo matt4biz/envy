@@ -1,8 +1,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
+	"strings"
 )
 
 type ReadCommand struct {
@@ -10,6 +12,18 @@ type ReadCommand struct {
 }
 
 func (cmd *ReadCommand) Run() int {
+	fs := flag.NewFlagSet("list", flag.ContinueOnError)
+	unquote := fs.Bool("q", false, "unquote embedded JSON")
+
+	fs.Usage = cmd.usage
+
+	if err := fs.Parse(cmd.args); err != nil {
+		cmd.usage()
+		return 1
+	}
+
+	cmd.args = fs.Args()
+
 	if len(cmd.args) < 2 {
 		cmd.usage()
 		return 1
@@ -20,6 +34,20 @@ func (cmd *ReadCommand) Run() int {
 	if err != nil {
 		fmt.Fprintln(cmd.stderr, err)
 		return -1
+	}
+
+	if *unquote {
+		// we're going to have to do this the hard way
+
+		v := string(m)
+
+		v = strings.Trim(v, "\"")
+		v = strings.ReplaceAll(v, `\"`, `"`)
+		v = strings.ReplaceAll(v, `"{`, `{`)
+		v = strings.ReplaceAll(v, `}"`, `}`)
+		v = strings.ReplaceAll(v, `\\n`, ``)
+
+		m = []byte(v)
 	}
 
 	// it's nice to have the file (or stdout)

@@ -104,8 +104,9 @@ Usage:
   list [opts] realm[/key]
     -d  show decrypted secrets also
   read        realm       file
+    -q  unquote embedded JSON in values
+  write       realm       file
     -clear  overwrite contents
-  dump        realm       file
   version
 
 Listing a realm displays a timestamp, size, and hash for each key-value pair.
