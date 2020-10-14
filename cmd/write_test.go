@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestRead(t *testing.T) {
+func TestWrite(t *testing.T) {
 	dname, err := ioutil.TempDir("", "scratch")
 
 	if err != nil {
@@ -56,7 +56,7 @@ func TestRead(t *testing.T) {
 	}
 }
 
-func TestReadOverwrite(t *testing.T) {
+func TestOverwrite(t *testing.T) {
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	app := NewTestApp(t, stdout, stderr)

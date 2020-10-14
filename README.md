@@ -1,7 +1,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/matt4biz/envy)](https://goreportcard.com/report/github.com/matt4biz/envy)
 
 # envy
-Use envy to manage environment variables with your OS keychain
+Use `envy` to manage environment variables with your OS keychain
 
 To use the tool, clone the repo and run `make`. To use the library, run `go get` (or just build an app which imports the library using Go modules).
 
@@ -32,7 +32,7 @@ $ envy add dev token=8inlknmdgoi8uap8ow3hw3.pws9jpo9jskgs....sldkfs
 
 Many times the variables needed are secrets, such as a credential needed to renew an OAuth token, or perhaps the token itself. As a result, even though dot-files can be set with 0600 or 0400 permissions (only the owner has privileges), there's some risk to having these credentials in plaintext form.
 
-envy certainly isn't unique, but I needed one or two capabilities not found elsewhere, and 
+Envy certainly isn't unique, but I needed one or two capabilities not found elsewhere, and 
 
 * I wanted to keep the implementation simple
 * it was also a good opportunity to build an example app in Go
@@ -42,13 +42,13 @@ I have deliberately minimized the dependencies, which are basically the [Bolt da
 ## How it works
 Variables (key-value pairs) are grouped into "realms" which is just a shorter way to type "namespaces". Because these variables are primarily used as environment variables, they're stored in a map of string keys to string values.
 
-envy maintains a Bolt database in the "user config" directory, for example, `$HOME/Library/Application Support` on macOS. That database has a bucket for each realm, and an entry in the bucket for each key-value pair.
+Envy maintains a Bolt database in the "user config" directory, for example, `$HOME/Library/Application Support` on macOS. That database has a bucket for each realm, and an entry in the bucket for each key-value pair.
 
 With each variable is some metadata: we keep the last-modified timestamp, size, and a secure hash of the value part of the key-value pair. The hash is also used with AES-GCM when that value is encrypted. The encrypted data and the metadata in JSON form are converted to Base64 encoding and then stored together a single object identified by the key. Only the (possibly secret) value is encrypted; the metadata isn't, but if the hash is changed, decryption fails.
 
 The secret key needed to run AES-GCM is stored in your system's secure keychain, which on macOS means the default login keychain that's visible in Keychain Access. (Note that you can see and even edit the secret key in Keychain Access or using the `security` command -- but if you change or delete that key, you'll never get your data back out of the Bolt database.)
 
-The secret key is added once to the keychain when you first run envy. If you want to wipe everything and start over, then
+The secret key is added once to the keychain when you first run Envy. If you want to wipe everything and start over, then
 
 1. remove the key named `matt4biz-envy-secret-key` from your keychain
 2. remove the database, which is `envy/envy.db` in your config directory
@@ -70,6 +70,7 @@ Usage:
   list [opts] realm[/key]
     -d  show decrypted secrets also
   read        realm       file
+    -q  unquote embedded JSON in values
   write       realm       file
     -clear  overwrite contents
   version
@@ -143,9 +144,9 @@ $ envy list
 shows that we've returned the database to its empty state.
 
 ### Exec
-Of course, the `exec` subcommand is the main reason for this tool. Given a realm (or a specific key from a realm), envy will execute another command with its environment variables augmented by data that envy stores. (See the example above.)
+Of course, the `exec` subcommand is the main reason for this tool. Given a realm (or a specific key from a realm), Envy will execute another command with its environment variables augmented by data that Envy stores. (See the example above.)
 
-envy can pass (some) signals through to its child process, particularly control-C, so it's possible to kill off the child if you need to. The childs standard input, output, and error output mirror envy's environment.
+Envy can pass (some) signals through to its child process, particularly control-C, so it's possible to kill off the child if you need to. The childs standard input, output, and error output mirror Envy's environment.
 
 ### Write and read
 The `write` and `read` subcommands allow a realm to be updated or written out using JSON. If the filename is "-" then `stdin` or `stdout` are used.
@@ -163,8 +164,33 @@ $ envy read test -
 
 Normally, writing JSON into a realm adds or overwrites existing keys, but otherwise leaves the existing data in place. Using the `-clear` option causes the realm to be purged first.
 
+In some cases, stored data is JSON that ends up being "double-quoted" when saved as a string.
+
+```
+$ envy add test a='{"one":{"a":"1","b":"2"}, "two":{"a":"5","b":"6"}}'
+$ envy read test - | jq
+{
+  "a": "{\"one\":{\"a\":\"1\",\"b\":\"2\"}, \"two\":{\"a\":\"5\",\"b\":\"6\"}}"
+}
+$ envy read -q test - | jq
+{
+  "a": {
+    "one": {
+      "a": "1",
+      "b": "2"
+    },
+    "two": {
+      "a": "5",
+      "b": "6"
+    }
+  }
+}
+```
+
+The embedded JSON can't be processed without having the extra quote marks removed, which is what the `-q` option does (it also removes embedded newlines for convenience).
+
 ## As a library
-envy is not just a command-line tool, it's also a library that can be used in building another tool.
+Envy is not just a command-line tool, it's also a library that can be used in building another tool.
 
 To get started, you just need to create the `Envy` object:
 
@@ -181,13 +207,13 @@ import (
 )
 
 func main() {
-	// the standard location is config-dir/envy
 	e, err := envy.New()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// the standard location is config-dir/envy
 	fmt.Println(e.Directory())
 
 	m, err := e.FetchAsJSON("test")
@@ -268,7 +294,7 @@ The demo will run `child` as a subcommand; the child will print some environment
 
 The test script in `test/test.sh` is used by unit tests, and shouldn't be changed.
 
-The unit tests use a mock keyring in memory and auto-delete their temporary Bolt DB, so they have no effect on your "real" envy secret key and secure DB.
+The unit tests use a mock keyring in memory and auto-delete their temporary Bolt DB, so they have no effect on your "real" Envy secret key and secure DB.
 
 Code coverage is around 70% (more error path coverage needed).
 
