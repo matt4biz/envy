@@ -61,17 +61,17 @@ envy: a tool to securely store and retrieve environment variables.
 
 ...
 
-Usage:
-  -h  show this help message
+Usage: envy [opts] subcommand
+  -h  show this help message and exit
 
-  add         realm       key=value [key=value ...]
-  drop        realm[/key]
-  exec        realm[/key] command [args ...]
-  list [opts] realm[/key]
+  add          realm       key=value [key=value ...]
+  drop         realm[/key]
+  exec         realm[/key] command [args ...]
+  list  [opts] [realm[/key]]
     -d  show decrypted secrets also
-  read        realm       file
+  read  [opts] realm       file ('-' for stdout)
     -q  unquote embedded JSON in values
-  write       realm       file
+  write [opts] realm       file ('-' for stdin)
     -clear  overwrite contents
   version
 ```

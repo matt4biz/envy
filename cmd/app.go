@@ -93,19 +93,19 @@ All operations take place in one of the subcommands. Add will create a realm
 if it doesn't exist, or overwrite keys in a realm that already exists. Drop
 may be used to delete one key or an entire realm. Exec will execute a command
 with arguments, with value(s) from the realm injected as environment variables.
-Read and dump allow a realm's data to be imported or exported in JSON format.
+Read and write allow a realm's data to be exported or imported in JSON format.
 
-Usage:
-  -h  show this help message
+Usage: envy [opts] subcommand
+  -h  show this help message and exit
 
-  add         realm       key=value [key=value ...]
-  drop        realm[/key]
-  exec        realm[/key] command [args ...]
-  list [opts] realm[/key]
+  add          realm       key=value [key=value ...]
+  drop         realm[/key]
+  exec         realm[/key] command [args ...]
+  list  [opts] [realm[/key]]
     -d  show decrypted secrets also
-  read        realm       file
+  read  [opts] realm       file ('-' for stdout)
     -q  unquote embedded JSON in values
-  write       realm       file
+  write [opts] realm       file ('-' for stdin)
     -clear  overwrite contents
   version
 
