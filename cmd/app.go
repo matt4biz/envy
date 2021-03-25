@@ -68,6 +68,8 @@ func (a *App) getCommand() (Command, error) {
 		return &DropCommand{a}, nil
 	case "exec":
 		return &ExecCommand{a}, nil
+	case "get":
+		return &GetCommand{a}, nil
 	case "list":
 		return &ListCommand{a}, nil
 	case "read":
@@ -93,12 +95,14 @@ All operations take place in one of the subcommands. Add will create a realm
 if it doesn't exist, or overwrite keys in a realm that already exists. Drop
 may be used to delete one key or an entire realm. Exec will execute a command
 with arguments, with value(s) from the realm injected as environment variables.
+Get will return the stored value (string for a key, JSON for an entire realm).
 Read and write allow a realm's data to be exported or imported in JSON format.
 
 Usage: envy [opts] subcommand
   -h  show this help message and exit
 
   add          realm       key=value [key=value ...]
+  get          realm[/key]
   drop         realm[/key]
   exec         realm[/key] command [args ...]
   list  [opts] [realm[/key]]
