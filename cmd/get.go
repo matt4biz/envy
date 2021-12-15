@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"strings"
 )
@@ -11,6 +12,18 @@ type GetCommand struct {
 }
 
 func (cmd *GetCommand) Run() int {
+	fs := flag.NewFlagSet("get", flag.ContinueOnError)
+	raw := fs.Bool("n", false, "remove trailing newline")
+
+	fs.Usage = cmd.usage
+
+	if err := fs.Parse(cmd.args); err != nil {
+		cmd.usage()
+		return 1
+	}
+
+	cmd.args = fs.Args()
+
 	if len(cmd.args) < 1 {
 		cmd.usage()
 		return 1
@@ -24,13 +37,22 @@ func (cmd *GetCommand) Run() int {
 		var m json.RawMessage
 
 		if m, err = cmd.FetchAsJSON(cmd.args[0]); err == nil {
-			fmt.Fprintln(cmd.stdout, string(m))
+			if *raw {
+				fmt.Fprint(cmd.stdout, string(m))
+			} else {
+				fmt.Fprintln(cmd.stdout, string(m))
+			}
+
 		}
 	} else {
 		var s string
 
 		if s, err = cmd.Get(parts[0], parts[1]); err == nil {
-			fmt.Fprintln(cmd.stdout, s)
+			if *raw {
+				fmt.Fprint(cmd.stdout, s)
+			} else {
+				fmt.Fprintln(cmd.stdout, s)
+			}
 		}
 	}
 
