@@ -103,6 +103,7 @@ Usage: envy [opts] subcommand
 
   add          realm       key=value [key=value ...]
   get          realm[/key]
+    -n	don't add a trailing newline
   drop         realm[/key]
   exec         realm[/key] command [args ...]
   list  [opts] [realm[/key]]

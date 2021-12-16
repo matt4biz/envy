@@ -189,6 +189,15 @@ $ envy read -q test - | jq
 
 The embedded JSON can't be processed without having the extra quote marks removed, which is what the `-q` option does (it also removes embedded newlines for convenience).
 
+### Get
+The `get` command just reads out a key (or keys of a realm) directly to stdout. The `-n` option avoids a final newline (which may cause an issue with passwords).
+
+For example, you can use it this way to populate a command's parameter on the command line (as opposed to using an environment variable):
+
+```
+$ my-command -a=`envy get -n test/a`
+```
+
 ## As a library
 Envy is not just a command-line tool, it's also a library that can be used in building another tool.
 

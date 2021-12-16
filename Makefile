@@ -5,7 +5,7 @@ SOURCES := $(wildcard internal/*.go cmd/*.go)
 ## doesn't have the -o option to name the file
 
 envy: envy.go $(SOURCES)
-	go build -ldflags "-X main.version=$(version)" -o $@ ./cmd && mv $@ $(GOPATH)/bin
+	go build -ldflags "-X main.version=$(version)" -o $@ ./cmd && install $@ $(GOPATH)/bin
 
 child: hack/main.go
 	go build -o $@ ./hack
