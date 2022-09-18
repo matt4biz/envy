@@ -106,6 +106,7 @@ Usage: envy [opts] subcommand
     -n	don't add a trailing newline
   drop         realm[/key]
   exec         realm[/key] command [args ...]
+    -y  write "yes" to the command's stdin (e.g., tf apply)
   list  [opts] [realm[/key]]
     -d  show decrypted secrets also
   read  [opts] realm       file ('-' for stdout)

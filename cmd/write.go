@@ -11,7 +11,7 @@ type WriteCommand struct {
 }
 
 func (cmd *WriteCommand) Run() int {
-	fs := flag.NewFlagSet("list", flag.ContinueOnError)
+	fs := flag.NewFlagSet("write", flag.ContinueOnError)
 	clear := fs.Bool("clear", false, "overwrite contents")
 
 	fs.Usage = cmd.usage

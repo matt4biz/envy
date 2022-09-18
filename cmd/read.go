@@ -12,7 +12,7 @@ type ReadCommand struct {
 }
 
 func (cmd *ReadCommand) Run() int {
-	fs := flag.NewFlagSet("list", flag.ContinueOnError)
+	fs := flag.NewFlagSet("read", flag.ContinueOnError)
 	unquote := fs.Bool("q", false, "unquote embedded JSON")
 
 	fs.Usage = cmd.usage

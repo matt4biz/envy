@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -14,6 +16,18 @@ type ExecCommand struct {
 }
 
 func (cmd *ExecCommand) Run() int {
+	fs := flag.NewFlagSet("get", flag.ContinueOnError)
+	yes := fs.Bool("y", false, "answer yes in stdin")
+
+	fs.Usage = cmd.usage
+
+	if err := fs.Parse(cmd.args); err != nil {
+		cmd.usage()
+		return 1
+	}
+
+	cmd.args = fs.Args()
+
 	if len(cmd.args) < 2 {
 		cmd.usage()
 		return 1
@@ -52,6 +66,12 @@ func (cmd *ExecCommand) Run() int {
 	sub.Stdout = cmd.stdout
 	sub.Stderr = cmd.stderr
 	sub.Env = append(os.Environ(), m...)
+
+	if *yes {
+		sub.Stdin = bytes.NewBufferString("yes\n")
+	} else {
+		sub.Stdin = cmd.stdin // TODO: this does not reliably work with TF prompt
+	}
 
 	go func() {
 		s := <-done
